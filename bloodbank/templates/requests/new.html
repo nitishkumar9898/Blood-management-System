@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}New Request | LifeDrop{% endblock %}
+
+{% block content %}
+<section class="section-heading dashboard-hero compact-hero">
+    <div>
+        <p class="eyebrow">Blood request</p>
+        <h1>Create request</h1>
+        <p class="hero-copy">{{ current_user.location }} receiver workspace</p>
+    </div>
+</section>
+
+<section class="panel form-panel">
+    <form method="post" class="form-grid">
+        <div class="form-row">
+            <label>
+                Blood group
+                <select name="blood_group" required>
+                    {% for group in blood_groups %}
+                        <option value="{{ group }}">{{ group }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                Units
+                <input type="number" name="units" min="1" max="6" value="1" required>
+            </label>
+        </div>
+        <div class="form-row">
+            <label>
+                Location
+                <input type="text" name="location" value="{{ current_user.location }}" required>
+            </label>
+            <label>
+                Hospital
+                <input type="text" name="hospital" required>
+            </label>
+        </div>
+        <div class="form-row">
+            <label>
+                Patient
+                <input type="text" name="patient_name" required>
+            </label>
+            <label>
+                Contact
+                <input type="tel" name="contact_phone" required>
+            </label>
+        </div>
+        <label>
+            Message
+            <textarea name="message" rows="4"></textarea>
+        </label>
+        <label class="check-label">
+            <input type="checkbox" name="is_emergency" value="1">
+            Emergency priority
+        </label>
+        <button class="button button-primary" type="submit">Create request</button>
+    </form>
+</section>
+{% endblock %}

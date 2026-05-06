@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory | LifeDrop{% endblock %}
+
+{% block content %}
+<section class="section-heading dashboard-hero compact-hero">
+    <div>
+        <p class="eyebrow">Blood inventory</p>
+        <h1>Stock control</h1>
+        <p class="hero-copy">{{ inventory_items|length }} blood groups tracked | {{ low_stock|length }} low-stock alerts</p>
+    </div>
+</section>
+
+{% if low_stock %}
+<section class="alert-band">
+    <strong>Low stock:</strong>
+    {% for item in low_stock %}
+        <span>{{ item.blood_group }} ({{ item.units }})</span>
+    {% endfor %}
+</section>
+{% endif %}
+
+<section class="stock-grid inventory-stock-grid">
+    {% for item in inventory_items %}
+        <article class="stock-card {% if item.units <= item.low_stock_threshold %}stock-low{% endif %}">
+            <span>{{ item.blood_group }}</span>
+            <strong>{{ item.units }}</strong>
+            <div class="stock-meter" aria-hidden="true">
+                <i style="width: {{ [100, ((item.units / (item.low_stock_threshold * 3)) * 100)|round(0, 'floor')]|min }}%"></i>
+            </div>
+        </article>
+    {% endfor %}
+</section>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Blood group</th>
+                    <th>Units</th>
+                    <th>Low stock threshold</th>
+                    <th>Update</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inventory_items %}
+                    <tr>
+                        <td><strong>{{ item.blood_group }}</strong></td>
+                        <td>
+                            <form method="post" id="inventory-{{ item.id }}" class="inline-inventory-form">
+                                <input type="hidden" name="blood_group" value="{{ item.blood_group }}">
+                                <input type="number" name="units" min="0" value="{{ item.units }}">
+                            </form>
+                        </td>
+                        <td>
+                            <input form="inventory-{{ item.id }}" type="number" name="low_stock_threshold" min="1" value="{{ item.low_stock_threshold }}">
+                        </td>
+                        <td>
+                            <button form="inventory-{{ item.id }}" class="button button-small" type="submit">Save</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

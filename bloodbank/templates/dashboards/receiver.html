@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Receiver Dashboard | LifeDrop{% endblock %}
+
+{% block content %}
+<section class="section-heading dashboard-hero">
+    <div>
+        <p class="eyebrow">Receiver dashboard</p>
+        <h1>{{ current_user.name }}</h1>
+        <p class="hero-copy">{{ current_user.location }} | {{ pending_count }} pending | {{ completed_count }} completed</p>
+    </div>
+    <div class="hero-actions">
+        <a class="button button-light" href="{{ url_for('main.new_request') }}">New request</a>
+        <a class="button button-ghost" href="{{ url_for('main.search_donors') }}">Find donors</a>
+    </div>
+</section>
+
+<section class="metric-grid">
+    <article class="metric-card">
+        <div class="metric-top">
+            <span class="metric-icon">R</span>
+            <span class="metric-label">Total requests</span>
+        </div>
+        <strong>{{ requests|length }}</strong>
+    </article>
+    <article class="metric-card">
+        <div class="metric-top">
+            <span class="metric-icon">P</span>
+            <span class="metric-label">Pending</span>
+        </div>
+        <strong>{{ pending_count }}</strong>
+    </article>
+    <article class="metric-card">
+        <div class="metric-top">
+            <span class="metric-icon">C</span>
+            <span class="metric-label">Completed</span>
+        </div>
+        <strong>{{ completed_count }}</strong>
+    </article>
+    <article class="metric-card action-card">
+        <a class="button button-primary" href="{{ url_for('main.search_donors') }}">Find donors</a>
+        <a class="button button-outline" href="{{ url_for('main.new_request') }}">New request</a>
+    </article>
+</section>
+
+<section class="panel danger-panel">
+    <div class="panel-header">
+        <div>
+            <p class="eyebrow">Priority</p>
+            <h2>Emergency request</h2>
+        </div>
+    </div>
+    <form method="post" action="{{ url_for('main.new_request') }}" class="form-grid emergency-form" data-confirm="Send emergency broadcast now?">
+        <input type="hidden" name="is_emergency" value="1">
+        <div class="form-row">
+            <label>
+                Blood group
+                <select name="blood_group" required>
+                    {% for group in blood_groups %}
+                        <option value="{{ group }}">{{ group }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                Units
+                <input type="number" name="units" min="1" max="6" value="1" required>
+            </label>
+        </div>
+        <div class="form-row">
+            <label>
+                Location
+                <input type="text" name="location" value="{{ current_user.location }}" required>
+            </label>
+            <label>
+                Hospital
+                <input type="text" name="hospital" required>
+            </label>
+        </div>
+        <div class="form-row">
+            <label>
+                Patient
+                <input type="text" name="patient_name" required>
+            </label>
+            <label>
+                Contact
+                <input type="tel" name="contact_phone" required>
+            </label>
+        </div>
+        <label>
+            Message
+            <textarea name="message" rows="2"></textarea>
+        </label>
+        <button class="button button-danger" type="submit">Send emergency request</button>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <p class="eyebrow">Requests</p>
+            <h2>Lifecycle tracking</h2>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Blood</th>
+                    <th>Patient</th>
+                    <th>Hospital</th>
+                    <th>Status</th>
+                    <th>Broadcast</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in requests %}
+                    <tr>
+                        <td><strong>{{ item.blood_group }}</strong></td>
+                        <td>{{ item.patient_name }}</td>
+                        <td>{{ item.hospital }}</td>
+                        <td>
+                            <span class="status-pill {% if item.status == 'Completed' %}status-good{% elif item.status == 'Pending' %}status-warn{% else %}status-info{% endif %}">
+                                {{ item.status }}
+                            </span>
+                        </td>
+                        <td>{{ item.broadcast_count }}</td>
+                        <td class="table-actions">
+                            {% if item.status in ['Pending', 'Accepted'] %}
+                                <form method="post" action="{{ url_for('main.complete_blood_request', request_id=item.id) }}">
+                                    <button class="button button-small" type="submit">Complete</button>
+                                </form>
+                                <form method="post" action="{{ url_for('main.cancel_blood_request', request_id=item.id) }}">
+                                    <button class="button button-small button-outline" type="submit">Cancel</button>
+                                </form>
+                            {% else %}
+                                <span class="muted">Closed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="empty-row">No requests yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Login | LifeDrop{% endblock %}
+
+{% block content %}
+<section class="auth-layout">
+    <div class="auth-panel">
+        <div class="section-heading">
+            <p class="eyebrow">Secure access</p>
+            <h1>Login to LifeDrop</h1>
+        </div>
+        <form method="post" class="form-grid">
+            <label>
+                Email
+                <input type="email" name="email" required autocomplete="email">
+            </label>
+            <label>
+                Password
+                <input type="password" name="password" required autocomplete="current-password">
+            </label>
+            <div class="form-help-row">
+                <span></span>
+                <a href="{{ url_for('main.forgot_password') }}">Forgot password?</a>
+            </div>
+            <button class="button button-primary" type="submit">Login</button>
+        </form>
+        <p class="muted auth-switch">New here? <a href="{{ url_for('main.register') }}">Create an account</a></p>
+    </div>
+</section>
+{% endblock %}

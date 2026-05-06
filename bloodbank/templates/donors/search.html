@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Search Donors | LifeDrop{% endblock %}
+
+{% block content %}
+<section class="section-heading dashboard-hero compact-hero">
+    <div>
+        <p class="eyebrow">Smart search</p>
+        <h1>Eligible donor matches</h1>
+        <p class="hero-copy">{{ results|length }} ranked match{{ '' if results|length == 1 else 'es' }}</p>
+    </div>
+</section>
+
+<section class="panel search-panel">
+    <form method="get" class="search-form">
+        <label>
+            Blood group
+            <select name="blood_group">
+                <option value="">Any</option>
+                {% for group in blood_groups %}
+                    <option value="{{ group }}" {% if selected_blood_group == group %}selected{% endif %}>{{ group }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Location
+            <input type="text" name="location" value="{{ selected_location }}" placeholder="City or area">
+        </label>
+        <button class="button button-primary" type="submit">Search</button>
+    </form>
+</section>
+
+<section class="donor-result-grid">
+    {% for item in results %}
+        {% set donor = item.donor %}
+        <article class="donor-card">
+            <div class="donor-card-head">
+                <div>
+                    <p class="blood-label">{{ donor.blood_group }}</p>
+                    <h2>{{ donor.user.name }}</h2>
+                </div>
+                <span class="score-badge">{{ item.score }}</span>
+            </div>
+            <div class="donor-meta">
+                <span>{{ donor.area }}, {{ donor.city }}</span>
+                <span>{{ donor.phone }}</span>
+                <span>{{ donor.total_donations }} donation(s)</span>
+            </div>
+            <div class="status-row">
+                <span class="status-pill status-good">Available</span>
+                <span class="status-pill status-good">{{ item.eligibility.label }}</span>
+            </div>
+        </article>
+    {% else %}
+        <div class="empty-state">
+            <p class="eyebrow">No match</p>
+            <h1>Search by blood group or location</h1>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}

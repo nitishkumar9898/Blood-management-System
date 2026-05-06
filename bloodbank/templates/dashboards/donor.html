@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Donor Dashboard | LifeDrop{% endblock %}
+
+{% block content %}
+<section class="section-heading dashboard-hero">
+    <div>
+        <p class="eyebrow">Donor dashboard</p>
+        <h1>{{ current_user.name }}</h1>
+        <p class="hero-copy">{{ donor.blood_group }} donor | {{ donor.city }} | Score {{ score }}</p>
+    </div>
+    <div class="hero-actions">
+        <span class="hero-status">{{ eligibility.label }}</span>
+    </div>
+</section>
+
+<section class="metric-grid">
+    <article class="metric-card">
+        <div class="metric-top">
+            <span class="metric-icon">E</span>
+            <span class="metric-label">Eligibility</span>
+        </div>
+        <strong>{{ eligibility.label }}</strong>
+        {% if eligibility.eligible %}
+            <span class="status-pill status-good">Ready</span>
+        {% else %}
+            <span class="status-pill status-warn">Next {{ eligibility.next_date.strftime('%d %b %Y') }}</span>
+        {% endif %}
+    </article>
+    <article class="metric-card">
+        <div class="metric-top">
+            <span class="metric-icon">S</span>
+            <span class="metric-label">Donor score</span>
+        </div>
+        <strong>{{ score }}</strong>
+        <span class="metric-sub">Availability + activity + eligibility</span>
+    </article>
+    <article class="metric-card">
+        <div class="metric-top">
+            <span class="metric-icon">D</span>
+            <span class="metric-label">Total donations</span>
+        </div>
+        <strong>{{ donor.total_donations }}</strong>
+        <span class="metric-sub">{{ donor.blood_group }} blood group</span>
+    </article>
+    <article class="metric-card">
+        <div class="metric-top">
+            <span class="metric-icon">B</span>
+            <span class="metric-label">Stock</span>
+        </div>
+        <strong>{{ inventory_item.units if inventory_item else 0 }}</strong>
+        <span class="metric-sub">{{ donor.blood_group }} units in bank</span>
+    </article>
+</section>
+
+<section class="content-grid two-column">
+    <article class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Broadcasts</p>
+                <h2>Matching requests</h2>
+            </div>
+        </div>
+        {% if notifications %}
+            <div class="request-list">
+                {% for item in notifications %}
+                    <div class="request-card {% if item.request.is_emergency %}request-emergency{% endif %}">
+                        <div>
+                            <div class="row-between">
+                                <strong>{{ item.request.blood_group }} at {{ item.request.hospital }}</strong>
+                                <span class="status-pill {% if item.request.is_emergency %}status-danger{% else %}status-info{% endif %}">
+                                    {{ "Emergency" if item.request.is_emergency else "Normal" }}
+                                </span>
+                            </div>
+                            <p class="muted">{{ item.request.location }} | {{ item.request.units }} unit(s) | {{ item.request.contact_phone }}</p>
+                        </div>
+                        <form method="post" action="{{ url_for('main.accept_blood_request', request_id=item.request.id) }}">
+                            <button class="button button-primary" type="submit">Accept</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-inline">No pending broadcasts.</div>
+        {% endif %}
+    </article>
+
+    <article class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Blood bank</p>
+                <h2>Record donation</h2>
+            </div>
+        </div>
+        <form method="post" action="{{ url_for('main.donor_record_donation') }}" class="form-grid compact-form">
+            <label>
+                Units
+                <input type="number" name="units" min="1" max="4" value="1">
+            </label>
+            <button class="button button-primary" type="submit" {% if not eligibility.eligible %}disabled{% endif %}>Record donation</button>
+        </form>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <p class="eyebrow">Lifecycle</p>
+            <h2>Accepted requests</h2>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Hospital</th>
+                    <th>Units</th>
+                    <th>Status</th>
+                    <th>Contact</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in accepted_requests %}
+                    <tr>
+                        <td>{{ item.patient_name }}</td>
+                        <td>{{ item.hospital }}</td>
+                        <td>{{ item.units }}</td>
+                        <td><span class="status-pill status-info">{{ item.status }}</span></td>
+                        <td>{{ item.contact_phone }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="empty-row">No accepted requests yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

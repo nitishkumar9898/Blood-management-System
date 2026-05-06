@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | LifeDrop{% endblock %}
+
+{% block content %}
+<section class="section-heading dashboard-hero">
+    <div>
+        <p class="eyebrow">Admin dashboard</p>
+        <h1>Blood bank command center</h1>
+        <p class="hero-copy">{{ metrics.active_donors }} active donors | {{ low_stock|length }} low-stock alerts | {{ metrics.success_rate }}% completed</p>
+    </div>
+    <div class="hero-actions">
+        <a class="button button-light" href="{{ url_for('main.search_donors') }}">Search donors</a>
+        <a class="button button-ghost" href="{{ url_for('main.inventory') }}">Inventory</a>
+    </div>
+</section>
+
+<section class="metric-grid">
+    <article class="metric-card">
+        <div class="metric-top">
+            <span class="metric-icon">D</span>
+            <span class="metric-label">Total donors</span>
+        </div>
+        <strong>{{ metrics.total_donors }}</strong>
+    </article>
+    <article class="metric-card">
+        <div class="metric-top">
+            <span class="metric-icon">A</span>
+            <span class="metric-label">Active donors</span>
+        </div>
+        <strong>{{ metrics.active_donors }}</strong>
+    </article>
+    <article class="metric-card">
+        <div class="metric-top">
+            <span class="metric-icon">R</span>
+            <span class="metric-label">Requests</span>
+        </div>
+        <strong>{{ metrics.total_requests }}</strong>
+    </article>
+    <article class="metric-card">
+        <div class="metric-top">
+            <span class="metric-icon">S</span>
+            <span class="metric-label">Blood stock</span>
+        </div>
+        <strong>{{ metrics.total_stock }}</strong>
+        <span class="metric-sub">{{ metrics.success_rate }}% success rate</span>
+    </article>
+</section>
+
+{% if low_stock %}
+<section class="alert-band">
+    <strong>Low stock:</strong>
+    {% for item in low_stock %}
+        <span>{{ item.blood_group }} ({{ item.units }})</span>
+    {% endfor %}
+</section>
+{% endif %}
+
+<section class="chart-grid">
+    <article class="panel chart-panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Monthly</p>
+                <h2>Donations</h2>
+            </div>
+        </div>
+        <canvas id="monthlyDonationsChart" height="220"></canvas>
+    </article>
+    <article class="panel chart-panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Inventory</p>
+                <h2>Blood distribution</h2>
+            </div>
+        </div>
+        <canvas id="bloodDistributionChart" height="220"></canvas>
+    </article>
+    <article class="panel chart-panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Success</p>
+                <h2>Request status</h2>
+            </div>
+        </div>
+        <canvas id="requestStatusChart" height="220"></canvas>
+    </article>
+</section>
+
+<section class="content-grid two-column">
+    <article class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Requests</p>
+                <h2>Recent activity</h2>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Blood</th>
+                        <th>Patient</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in recent_requests %}
+                        <tr>
+                            <td><strong>{{ item.blood_group }}</strong></td>
+                            <td>{{ item.patient_name }}</td>
+                            <td><span class="status-pill status-info">{{ item.status }}</span></td>
+                            <td>{{ "Emergency" if item.is_emergency else "Normal" }}</td>
+                            <td class="table-actions">
+                                {% if item.status in ['Pending', 'Accepted'] %}
+                                    <form method="post" action="{{ url_for('main.complete_blood_request', request_id=item.id) }}">
+                                        <button class="button button-small" type="submit">Complete</button>
+                                    </form>
+                                    <form method="post" action="{{ url_for('main.cancel_blood_request', request_id=item.id) }}">
+                                        <button class="button button-small button-outline" type="submit">Cancel</button>
+                                    </form>
+                                {% else %}
+                                    <span class="muted">Closed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" class="empty-row">No request activity.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Donors</p>
+                <h2>Network health</h2>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Blood</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for donor in donors %}
+                        {% set eligibility = donor_eligibility(donor) %}
+                        <tr>
+                            <td>{{ donor.user.name }}</td>
+                            <td><strong>{{ donor.blood_group }}</strong></td>
+                            <td>{{ donor_score(donor) }}</td>
+                            <td>
+                                <span class="status-pill {% if donor.user.is_active_account and donor.is_available and eligibility.eligible %}status-good{% else %}status-warn{% endif %}">
+                                    {{ "Active" if donor.user.is_active_account else "Inactive" }}
+                                </span>
+                            </td>
+                            <td>
+                                <form method="post" action="{{ url_for('main.toggle_donor', donor_id=donor.id) }}">
+                                    <button class="button button-small button-outline" type="submit">Toggle</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" class="empty-row">No donors found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+
+<section class="stock-grid">
+    {% for item in inventory %}
+        <article class="stock-card {% if item.units <= item.low_stock_threshold %}stock-low{% endif %}">
+            <span>{{ item.blood_group }}</span>
+            <strong>{{ item.units }}</strong>
+            <div class="stock-meter" aria-hidden="true">
+                <i style="width: {{ [100, ((item.units / (item.low_stock_threshold * 3)) * 100)|round(0, 'floor')]|min }}%"></i>
+            </div>
+        </article>
+    {% endfor %}
+</section>
+
+<script type="application/json" id="adminChartData">{{ chart_payload|safe }}</script>
+{% endblock %}

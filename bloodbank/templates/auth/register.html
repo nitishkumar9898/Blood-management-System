@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Register | LifeDrop{% endblock %}
+
+{% block content %}
+<section class="auth-layout auth-layout-wide">
+    <div class="auth-panel">
+        <div class="section-heading">
+            <p class="eyebrow">Join network</p>
+            <h1>Create account</h1>
+        </div>
+        <form method="post" class="form-grid">
+            <div class="form-row">
+                <label>
+                    Role
+                    <select name="role" id="roleSelect" required>
+                        <option value="donor">Donor</option>
+                        <option value="receiver">Receiver</option>
+                    </select>
+                </label>
+                <label>
+                    Full name
+                    <input type="text" name="name" required>
+                </label>
+            </div>
+            <div class="form-row">
+                <label>
+                    Email
+                    <input type="email" name="email" required autocomplete="email">
+                </label>
+                <label>
+                    Password
+                    <span class="password-control">
+                        <input type="password" name="password" required minlength="6" autocomplete="new-password" data-password-strength>
+                        <button type="button" class="password-toggle" data-toggle-password>Show</button>
+                    </span>
+                    <span class="password-strength" data-strength-label>Strength: waiting</span>
+                </label>
+            </div>
+            <label>
+                Location
+                <input type="text" name="location" required placeholder="City or district">
+            </label>
+
+            <div class="donor-fields" data-role-fields="donor">
+                <div class="form-row">
+                    <label>
+                        Blood group
+                        <select name="blood_group">
+                            {% for group in blood_groups %}
+                                <option value="{{ group }}">{{ group }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        Phone
+                        <input type="tel" name="phone">
+                    </label>
+                </div>
+                <div class="form-row">
+                    <label>
+                        City
+                        <input type="text" name="city">
+                    </label>
+                    <label>
+                        Area
+                        <input type="text" name="area">
+                    </label>
+                </div>
+                <div class="form-row align-end">
+                    <label>
+                        Last donation date
+                        <input type="date" name="last_donation_date">
+                    </label>
+                    <label class="check-label">
+                        <input type="checkbox" name="is_available" checked>
+                        Available
+                    </label>
+                </div>
+            </div>
+
+            <button class="button button-primary" type="submit">Create account</button>
+        </form>
+        <p class="muted auth-switch">Already registered? <a href="{{ url_for('main.login') }}">Login</a></p>
+    </div>
+</section>
+{% endblock %}

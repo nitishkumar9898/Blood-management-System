@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Reset Link | LifeDrop{% endblock %}
+
+{% block content %}
+<section class="auth-layout">
+    <div class="auth-panel">
+        <div class="section-heading">
+            <p class="eyebrow">Check reset link</p>
+            <h1>Email submitted</h1>
+            <p class="muted">If an active LifeDrop account exists for that email, a password reset link has been created. The link expires in {{ token_minutes }} minutes and works only once.</p>
+        </div>
+
+        {% if email_sent %}
+            <div class="reset-note">
+                Reset email sent to <strong>{{ email }}</strong>.
+            </div>
+        {% elif reset_url %}
+            <div class="reset-note">
+                <strong>Local demo reset link</strong>
+                <p class="muted">SMTP is not configured, so the demo link is shown here.</p>
+                <a class="button button-primary reset-link-button" href="{{ reset_url }}">Open reset link</a>
+                <code class="reset-url">{{ reset_url }}</code>
+            </div>
+        {% else %}
+            <div class="reset-note">
+                For security, this screen does not reveal whether the email exists.
+            </div>
+        {% endif %}
+
+        <p class="muted auth-switch"><a href="{{ url_for('main.login') }}">Back to login</a></p>
+    </div>
+</section>
+{% endblock %}

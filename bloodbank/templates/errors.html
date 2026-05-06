@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}{{ code }} | LifeDrop{% endblock %}
+
+{% block content %}
+<section class="empty-state">
+    <p class="eyebrow">Error {{ code }}</p>
+    <h1>{{ title }}</h1>
+    <a class="button button-primary" href="{{ url_for('main.dashboard') }}">Go to dashboard</a>
+</section>
+{% endblock %}

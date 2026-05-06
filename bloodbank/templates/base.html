@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}LifeDrop{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('main.index') }}">
+            <span class="brand-mark">L</span>
+            <span>LifeDrop</span>
+        </a>
+        <nav class="nav-links" aria-label="Primary navigation">
+            {% if current_user.is_authenticated %}
+                <a class="{% if request.endpoint in ['main.dashboard', 'main.admin_dashboard', 'main.donor_dashboard', 'main.receiver_dashboard'] %}nav-active{% endif %}" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                {% if current_user.role in ['receiver', 'admin'] %}
+                    <a class="{% if request.endpoint == 'main.search_donors' %}nav-active{% endif %}" href="{{ url_for('main.search_donors') }}">Search</a>
+                {% endif %}
+                {% if current_user.role == 'receiver' %}
+                    <a class="{% if request.endpoint == 'main.new_request' %}nav-active{% endif %}" href="{{ url_for('main.new_request') }}">Request</a>
+                {% endif %}
+                {% if current_user.role == 'admin' %}
+                    <a class="{% if request.endpoint == 'main.inventory' %}nav-active{% endif %}" href="{{ url_for('main.inventory') }}">Inventory</a>
+                {% endif %}
+                <span class="role-chip">{{ current_user.role|title }}</span>
+                <a href="{{ url_for('main.logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('main.login') }}">Login</a>
+                <a href="{{ url_for('main.register') }}">Register</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="page-shell">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-stack" aria-live="polite">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">
+                            <span>{{ message }}</span>
+                            <button type="button" class="icon-button flash-close" aria-label="Close alert">x</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
